@@ -1,31 +1,27 @@
 package com.example.simpleasynctask;
 
 import android.os.AsyncTask;
+import android.util.Log;
+import android.view.View;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import java.lang.ref.WeakReference;
 import java.util.Random;
 
-public class SimpleAsyncTask extends AsyncTask<Void,Void, String> {
-
+public class SimpleAsyncTask extends AsyncTask<Integer, Integer, String> {
     // The TextView where we will show results
     private WeakReference<TextView> mTextView;
+    private WeakReference<ProgressBar> progressBar;
 
     // Constructor that provides a reference to the TextView from the MainActivity
-    SimpleAsyncTask(TextView tv) {
+    SimpleAsyncTask(TextView tv, ProgressBar pb) {
         mTextView = new WeakReference<>(tv);
+        progressBar = new WeakReference<>(pb);
     }
 
-    /**
-     * Runs on the background thread.
-     *
-     * @param voids No parameters in this use case.
-     * @return Returns the string including the amount of time that
-     * the background thread slept.
-     */
     @Override
-    protected String doInBackground(Void... voids) {
-
+    protected String doInBackground(Integer... integers) {
         // Generate a random number between 0 and 10.
         Random r = new Random();
         int n = r.nextInt(11);
@@ -35,21 +31,26 @@ public class SimpleAsyncTask extends AsyncTask<Void,Void, String> {
         int s = n * 200;
 
         // Sleep for the random amount of time.
-        try {
-            Thread.sleep(s);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        for (int count =0; count <= integers[0]; count++) {
+            try {
+                Thread.sleep(s);
+                publishProgress(count);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
-
         // Return a String result.
-        return "Awake at last after sleeping for " + s + " milliseconds!";
+        return "Awake at last after sleeping for " + (s*integers[0]) + " milliseconds!";
     }
 
-    /**
-     * Does something with the result on the UI thread; in this case
-     * updates the TextView.
-     */
-    protected void onPostExecute(String result) {
-        mTextView.get().setText(result);
+    @Override
+    protected void onProgressUpdate(Integer... values) {
+        progressBar.get().setProgress(values[0]);
+    }
+
+    @Override
+    protected void onPostExecute(String s) {
+        mTextView.get().setText(s);
     }
 }
+
